@@ -55,6 +55,23 @@ After concrete idea is proven or architecture is fixed we can move some function
 I propose several functions to implement in Rust and its [Rust source code are placed here](https://github.com/h555yand/hyperon-experimental/blob/dd1b7b02f58ce1a072ab0f3834c6032b4fc5ff18/lib/src/child_ai/graph_kb.rs).
 They duplicate similar functions in [Python](child_ai.py) and have the same names.
 
+I’ve made updates for Expression Atoms for Graph knowledge base task.
+The task is to demonstrate possible approaches how to use Graph knowledge base data with MeTTa.
+Typical Graph knowledge base consists of Edges with Nodes, and they can have features to store information of different types (sparse distributed vectors for code and weights, IDs, Names, Types etc).
+Use case is to enter Edges with Nodes in MeTTa and then parse / interpret them in Graph knowledge base format that used in Child_AI idea.
+For Edges with Nodes the expression is used “((LinksEdge Link1) (MemoryNode Node1) (MemoryNode Node2))”.
+This is similar to OpenCog classic format expression "(EvaluationLink(PredicateNode eats) (ListLink (ConceptNode Sam)(ConceptNode flies)))"
+In future we can change it to Type format like (: LINK Type).
+I’ve modified the Rust file graph_kb.rs and have not changed any Python code. I’ve created several new functions ( GraphKB::parse_graph and others) in addition to the existing SexprParser / interpreter::interpret functions. In future, if we decide to include such functionality in MeTTa, we need to adapt the existing functions.
+The existing Rust functions parse / interpret the expression “((LinksEdge Link1) (MemoryNode Node1) (MemoryNode Node2))” as Expression Atom with children Symbol Atoms. To use it with Graph knowledge base we need to convert them into Expression Atom with children Grounded Atoms (Link Edge, Source and Destination Nodes) .
+The first step is to try to find Grounded Atoms by Symbol Link and Node Names. If no success, we create new edge and nodes, using Name from MeTTa Expression and default values for other fields.
+If no need in interpretation we just add Expression Atom in Space.
+To use interpretation we need to add special functions to work with Graph, similar to existing functions in Python self.add_atom(r"get-type", newGetAtomTypeAtom(self)).
+We can return to MeTTa requested information from Grounded Atoms in addition to Symbol Names and execute requested actions (to find linked nodes for example).
+There are two test cases: (1) when Grounded Atoms (Link1, Node1, Node2) exist,
+(2) when Grounded Atoms (Link11, Node11, Node22) don't exist.
+
+
 Future architecture can look like: <br/>
 • Python - Data preparation, Business logic, Data Science (ML libraries) <br/>
 • Rust - Hyperon Space / Atoms management <br/>
